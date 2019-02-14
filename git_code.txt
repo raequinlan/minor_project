@@ -1,0 +1,31 @@
+Basic codes for git
+
+open git bash from selected file by right clicking
+
+$ touch filename.fileextension
+	creates files 
+
+$ git config --global user.name 'Rae Quinlan'
+$ git config --global user.email 'rae.k.quinlan@gmail.com'
+
+
+$ git init
+	opens a local git rep from the selected file
+
+$ git add
+	adds files made to the stage area for editing
+	varaitions
+		filename (to add a single file)
+		. (adds all the files)
+		*.fileextension (adds all files from selected type)
+$ git rm --cached
+	removes files that have been added
+
+$ git status 
+	shows the stage area and any files that have been added or 
+	
+	
+$ git commit -m 'comment'
+	commits changes to the rep, include a comment of what has been changed
+
+$ git remote
