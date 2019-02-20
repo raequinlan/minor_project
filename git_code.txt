@@ -25,7 +25,7 @@ $ git status
 	shows the stage area and any files that have been added or 
 	
 	
-$ git commit -m 'comment'
+$ git commit -m "comment"
 	commits changes to the rep, include a comment of what has been changed
 
-$ git remote
+$ git remote origin 
