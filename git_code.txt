@@ -29,4 +29,8 @@ $ git status
 $ git commit -m "comment"
 	commits changes to the rep, include a comment of what has been changed
 
-$ git remote origin 
+$ git remote add origin *remote repository URL*
+
+$ git remote -v
+
+$ git push origin master
