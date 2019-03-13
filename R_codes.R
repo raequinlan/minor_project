@@ -2,27 +2,25 @@
 library(devtools)
 library(ncdf4)
 library(ggplot2)
-
-install_github('BarbaraRobson/ereefs')
-install_github('dkahle/ggmap')
-
 library(ereefs)
 
-map_ereef
 
-#manual ncdf package
+
 
 map_ereefs(var_name = "temp")
 
+#manual ncdf package
 
-janB <- get_ereefs_bottom_ts(var_names = "temp", location_latlon = c(-15, 153), start_date = c(2019, 01, 01), end_date = c(2019, 01, 31) )
+map_ereefs(var_name = "temp", layer= -10)
+
+
+janP <- get_ereefs_profile(var_names = "temp", location_latlon = c(-15, 153), start_date = c(2019, 01, 01), end_date = c(2019, 01, 31) )
 
 
 jan10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10, start_date = c(2019, 01, 01), end_date = c(2019, 01, 31))
 
 jan20 <- get_ereefs_depth_specified_ts(location_latlon = c(-15, 153), depth = 20, start_date = c(2019, 01, 01), end_date = c(2019, 01, 31))
-
-janP <- get_ereefs_profile(var_names = "temp", start_date = c(2016,03,24), end_date = c(2016, 03, 24), location_latlon = c(-17.57, 146.38) )
+janP2 <- get_ereefs_profile(var_names = "temp")
 # profile 1 = bottom, increasing numbers = decrease depth
 
 plot_ereefs_profile(profileObj = janP, var_name = "temp", target_date = c(2019, 01, 21))
@@ -81,3 +79,7 @@ subset.data.frame()
 
 glider_p1 <- glider_v[1:100,]
 plot(glider_p1$glider_temp, glider_p1$glider_dep, xlim = c(29, 29.8), ylim=rev(range(1,30)))
+
+
+
+e2016_3<- get_ereefs_profile(var_names = c("temp", "time"), start_date = c(2016,03,24), end_date = c(2016, 03, 24), location_latlon = c(-17.57, 146.38) )

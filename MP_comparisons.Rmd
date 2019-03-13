@@ -1,0 +1,205 @@
+---
+title: "Minor Project"
+author: "Rae"
+date: "6 March 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+###Libraries required
+
+```{r}
+install_github("BarbaraRobson/ereefs")
+install_github("dkahle/ggmap")
+install_github("mdsumner/ncdf4")
+```
+
+```{r}
+library(devtools)
+library(ncdf4)
+library(ggplot2)
+library(ereefs)
+library(readr)
+```
+
+
+
+###eReefs Models
+*get_ereefs_profile(var_names = "Temp",location_latlon = c(), start_date = c(2016, 2, 4), end_date = c(2016, 3, 2), input_file = "menu", input_grid = NA,eta_stem = NA, squeeze = TRUE, override_positive = FALSE)*
+  
+```{r}
+e2016_3<- get_ereefs_profile(var_names = c("temp"), location_latlon = c(-17.73,146.4), start_date = c(2016, 03, 26), end_date = c(2016, 03, 26))
+
+
+janP <- get_ereefs_profile(var_names = "temp", location_latlon = c(-15, 153), start_date = c(2019, 01, 01), end_date = c(2019, 01, 31))
+
+plot_ereefs_profile(profileObj = e2016_3, var_name = "temp", target_date = c(2016, 03, 26))
+
+#######
+sliceT <- get_ereefs_slice(var_names="temp")
+
+plot_ereefs_slice(sliceT, var_name = "temp")
+
+map_ereefs(var_name="temp_expose")
+
+```
+
+
+  
+###Glider data  
+  
+*nc_open( filename, write=FALSE, readunlim=TRUE, verbose=FALSE, 
+ 	auto_GMT=TRUE, suppress_dimvals=FALSE )*
+ 	
+```{r}
+g2015_11csv<- read_csv("TIME_DEPTH_LAT_LON_PSAL_TEMP_CNDC_VBSC_CDOM_CPHL_DOX1_DOX2_IRRAD443_IRRAD490_IRRAD555_IRRAD670_BBP.csv")
+
+g2015_11nc <- nc_open("MySubset_Aims_2015_11_27.nc")
+
+
+
+ggplot(g2016_3, aes(temp, depth), ylim=rev(range(1,30))) +  geom_path() + theme_bw()
+
+plot(  xlim = c(29, 29.8), ylim=rev(range(1,30)))
+```
+ 	
+ 	
+```{r}
+glider <- function(x) { 
+  temp <- ncvar_get(x, 'TEMP')
+  depth <- ncvar_get(x, 'DEPTH')
+  timeS <- ncvar_get(x, 'TIME')
+  lat <- ncvar_get(x, 'LATITUDE')
+  long <- ncvar_get(x, 'LONGITUDE')
+  data.frame(timeS, lat, long, depth, temp)
+  
+}
+```
+
+
+```{r}
+
+g2015_11 <- glider(nc_open("MySubset_AIMS_2015_11_27.nc"))
+g2015_11 <- na.omit(g2015_11)
+
+attach(g2015_11)
+ggplot(g2015_11, aes(long, lat)) +  geom_path() + theme_bw()
+ggplot(added_time, aes(temp, depth)) + scale_y_continuous(trans = "reverse") +  geom_path() + theme_bw()
+
+
+time <- as.POSIXlt((g2015_11$timeS)*86400, "Australia/Brisbane", origin = as.POSIXlt("1950-01-01", "UTC"))
+
+added_time <- cbind(g2015_11, time)
+
+as.POSIXlt((x$time)*86400, "Australia/Brisbane", origin = as.POSIXlt("1950-01-01", "UTC"))
+
+
+as.POSIXlt(15000.34, "Australia/Brisbane", origin = as.POSIXlt("1950-01-01"))
+
+```
+
+ 	
+#Comparing matching depths 
+- match location = -18.59, 147.09
+- match day = 2017 12 01 (I am assuming it is taking the time closest to 12 so will use glider data between 11-12pm)
+- match depth = 5, 10, 15
+- find the average temperature of both 
+
+```{r}
+e1201_5 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.09), input_file = 6)
+
+e1201_10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.094), input_file = 6)
+
+e1201_15 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 15, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.09), input_file = 6)
+
+```
+
+
+```{r}
+g1711_12 <- glider(nc_open("IMOS_ANFOG_BCEOPSTUV_20171107T015221Z_SL209_FV01_timeseries_END-20171208T042436Z.nc"))
+
+#add time and date
+g1711_12$time <- as.POSIXlt((g1711_12$timeS)*86400, "Australia/Brisbane", origin = as.POSIXlt("1950-01-01", "UTC"))
+g1711_12$time <- as.character(g1711_12$time)
+
+g1711_12$date <- as.Date(g1711_12$timeS, origin = "1950-01-01")
+
+g1711_12$date <- as.character(g1711_12$date)
+
+
+
+# try to subset to only have 2017 12 01 @ 11 an 12 
+
+
+g171201_d <- g1711_12[which(g1711_12$date == c("2017-12-01")), names(g1711_12) %in% c("timeS", "lat", "long", "depth", "temp", "time")]
+
+
+  ##find the index of 11:00:00 and 12:00:00
+start_time <- which(g171201_d$time == "2017-12-01 11:00:00", arr.ind = T) 
+end_time <- which(g171201_d$time == "2017-12-01 12:00:00", arr.ind = T)
+
+g171201_h <- g171201_d[c(start_time:end_time),c(1:6)]
+
+
+### subset 5, 10 and 15 m 
+g1201_5 <- g171201_h[which( g171201_h$depth > 4.5 & g171201_h$depth < 5.5), names(g171201_h) %in% c("lat", "long", "depth", "temp")]
+g1201_5a <- mean(g1201_5$temp)
+g1201_5s <- sd(g1201_5$temp)
+
+g1201_10 <- g171201_h[which( g171201_h$depth > 9.5 & g171201_h$depth < 10.5), names(g171201_h) %in% c("lat", "long", "depth", "temp")]
+g1201_10a <- mean(g1201_10$temp)
+g1201_10s <- sd(g1201_10$temp)
+
+g1201_15 <- g171201_h[which( g171201_h$depth > 14.5 & g171201_h$depth < 15.5), names(g171201_h) %in% c("lat", "long", "depth", "temp")]
+g1201_15a <- mean(g1201_15$temp)
+g1201_15s <- sd(g1201_15$temp)
+
+```	
+ 	
+###combining results from 
+data: either eReefs (e) or glider (g)
+depth: 5, 10, 15 
+temperature
+sd(for glider means)
+```{r}
+c1201
+```
+
+plot lat/long
+```{r}
+
+```
+
+
+
+#comparing profiles
+- match loaction
+- plot of both profiles side by side 
+```{r}
+
+```
+
+
+
+ ###Notes
+ > as.date to convert teh different dates into the same format
+ 
+ 
+ 
+#Using fuzzy verification methods tho compare eReefs and glider data
+- glider trajectory as a time series
+- glider temperature is averaged into model volumetric cells at discrete time intervals (these intervals match with time-step of the model = 1 hour in the case of GBR1)
+- co-loacting model and glider time and space to be able to visualise temperature as a time series
+- timeseries + depth and number of observation to quantitatively assess
+- input: glider file with location and temperature
+- output: time series file with location, glider average temperature, model temperature and model bounds
+
+
+- at each time interval matching the location of glider with model and averages the temperature 
+    -- I do not understand what is being averaged as the glider only goes through each location and time once. 
+      --- is it averaging the temperature from that hour? But then wouldnt the number of observations used be the same as they are taken every 2 seconds from the glider? + cant really average out temperatures over different depths. 
+      --- is it averaging the temperature from that hour in that location with may be several profiles 
+    
+
+#z-grid
