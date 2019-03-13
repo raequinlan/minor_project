@@ -41,8 +41,6 @@ p1 <- data.frame(janP$profiles, depthIs)
 janP$profiles
 
 
-#z_top or z_bot
-# 5M LAYER 43
 
 map_ereefs_movie('temp', start_date = c(2019, 01, 01), end_date = c(2019, 01, 31))
 
@@ -83,3 +81,10 @@ plot(glider_p1$glider_temp, glider_p1$glider_dep, xlim = c(29, 29.8), ylim=rev(r
 
 
 e2016_3<- get_ereefs_profile(var_names = c("temp", "time"), start_date = c(2016,03,24), end_date = c(2016, 03, 24), location_latlon = c(-17.57, 146.38) )
+
+
+
+
+
+get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2015, 03, 27), end_date = c(2015,03,28), location_latlon = c(-17.73,146.4) )
+

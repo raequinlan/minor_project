@@ -1,0 +1,127 @@
+---
+title: "single depth comparisons"
+author: "Rae"
+date: "13 March 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+1. get nc glider data and convert to a workable data.frame
+2. convert date and time
+3. subset specific day and time (averaging an hour of glider data)
+4. subset specific depths and average (subsetting +/- 0.5 m around selected depth)
+5. download corresponding model temperature from eReefs (get_ereefs_depth_specific_ts())
+6. combine eReef and glider temperatures 
+7. plot using ggplot 
+- next steps are to perfom some statistical analysis of any difference
+- to see if teh step by step code i have used can be turn into a function to male it easy to change days/locations
+- find out if there is a way to compute coordindates to distance (m) in R
+- find out about get_ereefs_depth_specific_ts() time 
+  -- at the moment assuming it is like the others and taking around midday but couldnt find this in the code
+- why teh time seems to be off
+ -- eg when I subset a specific date it take from 10am to 10am not midnight to midnight is it because I selected Brisbane time
+ 
+ -- really need to refine the locations!!
+
+
+#Glider
+created thsi short fucntion to extract the variables I need from the glider nc file
+```{r}
+glider <- function(x) { 
+  temp <- ncvar_get(x, 'TEMP')
+  depth <- ncvar_get(x, 'DEPTH')
+  timeS <- ncvar_get(x, 'TIME')
+  lat <- ncvar_get(x, 'LATITUDE')
+  long <- ncvar_get(x, 'LONGITUDE')
+  data.frame(timeS, lat, long, depth, temp)
+}
+```
+
+extracts wanted data
+```{r}
+g_gbr1711 <- glider(nc_open("IMOS_ANFOG_BCEOPSTUV_20171107T015221Z_SL209_FV01_timeseries_END-20171208T042436Z.nc"))
+```
+
+adding time and date
+```{r}
+g_gbr1711$time <- as.POSIXlt((g_gbr1711$timeS)*86400, origin = as.POSIXlt("1950-01-01", "UTC"))
+g_gbr1711$time <- as.character(g_gbr1711$time)
+
+g_gbr1711$date <- as.Date(g_gbr1711$timeS, origin = "1950-01-01")
+g_gbr1711$date <- as.character(g_gbr1711$date)
+```
+
+selecting the day
+```{r}
+g_gbr171124 <- g_gbr1711[which(g_gbr1711$date == c("2017-11-24")), names(g_gbr1711) %in% c("timeS", "lat", "long", "depth", "temp", "time")]
+```
+
+selection the time
+```{r}
+start_time <- which(g_gbr171124$time == "2017-11-24 21:00:00", arr.ind = T) 
+end_time <- which(g_gbr171124$time == "2017-11-24 22:00:00", arr.ind = T)
+
+g_gbr171124_12 <- g_gbr171124[c(start_time:end_time),c(1:6)] #make sure start_time/end_time are correct
+
+g_gbr171124_22 <- g_gbr171124[c(start_time:end_time),c(1:6)]
+```
+
+```{r}
+gd_5 <- g_gbr171124_12[which( g_gbr171124_12$depth > 4.5 & g_gbr171124_12$depth < 5.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_5a <- mean(gd_5$temp)
+gd_5s <- sd(gd_5$temp)
+
+gd_10 <- g_gbr171124_12[which( g_gbr171124_12$depth > 9.5 & g_gbr171124_12$depth < 10.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_10a <- mean(gd_10$temp)
+gd_10s <- sd(gd_10$temp)
+
+gd_15 <- g_gbr171124_12[which( g_gbr171124_12$depth > 14.5 & g_gbr171124_12$depth < 15.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_15a <- mean(gd_15$temp)
+gd_15s <- sd(gd_15$temp)
+```
+
+find lat and long
+```{r}
+round(max(g_gbr171124_12$lat), digits=2)
+round(min(g_gbr171124_12$lat), digits=2)
+round(max(g_gbr171124_12$long), digits=2)
+round(min(g_gbr171124_12$long), digits=2)
+
+```
+
+
+#eReefs
+
+at the moment have to physically input the selected dates, depth and location
+```{r}
+
+ed_5 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_5a <- ed_5$temp
+
+ed_10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_10a <- ed_10$temp
+
+ed_15 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 15, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_15a <- ed_15$temp
+
+```
+
+
+# Combining results from either data set
+
+```{r}
+c_temp <- c(ed_5a, ed_10a, ed_15a, gd_5a, gd_10a, gd_15a)
+c_depth <- c(5, 10, 15, 5, 10, 15)
+c_data <- c("eReefs","eReefs","eReefs","Glider","Glider","Glider")
+c171201 <- data.frame(c_temp, c_depth, c_data)
+```
+
+#plotting
+```{r}
+ggplot(c171201, aes(c_temp, c_depth, colour=c_data), ) + geom_point() + geom_path() + scale_y_continuous(trans = "reverse") + theme_bw() + labs(title="Glider/eReefs Comparison 24-11-2017 GBR",x="Temperature", y = "Depth below surface (m)")
+```
+
+
+

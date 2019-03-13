@@ -107,11 +107,17 @@ as.POSIXlt(15000.34, "Australia/Brisbane", origin = as.POSIXlt("1950-01-01"))
 - find the average temperature of both 
 
 ```{r}
+e1201_1 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 1, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.09), input_file = 6)
+e1201_1a <- e1201_1$temp
+
 e1201_5 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.09), input_file = 6)
+e1201_5a <- e1201_5$temp
 
 e1201_10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.094), input_file = 6)
+e1201_10a <- e1201_10$temp
 
 e1201_15 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 15, start_date = c(2017, 12, 01), end_date = c(2017,12,01), location_latlon = c(-18.59,147.09), input_file = 6)
+e1201_15a <- e1201_15$temp
 
 ```
 
@@ -141,8 +147,15 @@ end_time <- which(g171201_d$time == "2017-12-01 12:00:00", arr.ind = T)
 
 g171201_h <- g171201_d[c(start_time:end_time),c(1:6)]
 
+```
 
-### subset 5, 10 and 15 m 
+glider depths
+```{r}
+### subset at surface (<1m) 5, 10 and 15 m 
+g1201_1 <- g171201_h[which(g171201_h$depth < 3), names(g171201_h) %in% c("lat", "long", "depth", "temp")]
+g1201_1a <- mean(g1201_1$temp)
+g1201_1s <- sd(g1201_1$temp)
+
 g1201_5 <- g171201_h[which( g171201_h$depth > 4.5 & g171201_h$depth < 5.5), names(g171201_h) %in% c("lat", "long", "depth", "temp")]
 g1201_5a <- mean(g1201_5$temp)
 g1201_5s <- sd(g1201_5$temp)
@@ -163,12 +176,26 @@ depth: 5, 10, 15
 temperature
 sd(for glider means)
 ```{r}
-c1201
+c_temp <- c(e1201_5a, e1201_10a, e1201_15a, g1201_5a, g1201_10a, g1201_15a)
+c_depth <- c(5, 10, 15, 5, 10, 15)
+c_data <- c("eReefs","eReefs","eReefs","Glider","Glider","Glider")
+c171201 <- data.frame(c_temp, c_depth, c_data)
 ```
+
+###plotting temperatures
+```{r}
+ggplot(c171201, aes(c_temp, c_depth, colour=c_data), ) + geom_point() + geom_line() + scale_y_continuous(trans = "reverse") + theme_bw() + labs(title="Glider/eReefs Comparison 01-12-2017 GBR",x="Temperature", y = "Depth below surface (m)")
+```
+
 
 plot lat/long
 ```{r}
-
+ggplot(g171201_h, aes(lat, long)) + geom_path() + theme_bw()
+attach(g171201_h)
+min(lat)
+min(long)
+max(lat)
+max(long)
 ```
 
 
