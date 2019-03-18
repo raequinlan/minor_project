@@ -19,7 +19,7 @@ ereefs <- function(x) {
   
 }
 
-ereefs(get_ereefs_profile(var_names = "temp", start_date = c(2017, 11, 10), end_date = c(2017, 11, 10), location_latlon = c(-17.837, 146.710), input_file = 6))
+e1 <- ereefs(get_ereefs_profile(var_names = "temp", start_date = c(2017, 11, 10), end_date = c(2017, 11, 10), location_latlon = c(-17.837, 146.710), input_file = 6))
 ```
 
 glider <- function(x) { 
@@ -82,7 +82,7 @@ g_gbr1711$date <- as.Date(g_gbr1711$timeS, origin = "1950-01-01")
 g_gbr1711$date <- as.character(g_gbr1711$date)
 
 g_gbr1711$depth_msl <- (g_gbr1711$depth*(-1)+0.322)
-g_gbr1711$depth_msl <- (g_gbr1711$depth_msl*(-1)
+g_gbr1711$depth_msl <- (g_gbr1711$depth_msl*(-1))
 ```
 
 
@@ -93,7 +93,7 @@ g_gbr_d <- g_gbr1711[which(g_gbr1711$date == c("2017-11-10")), names(g_gbr1711) 
 
 ```{r}
 start_time <- which(g_gbr_d$time == "2017-11-10 11:30:00") 
-end_time <- which(g_gbr_d$time == "2017-11-10 12:30:00"), 
+end_time <- which(g_gbr_d$time == "2017-11-10 12:30:00") 
 
 g_gbr_h<- g_gbr_d[c(start_time:end_time),c(1:7)] #make sure start_time/end_time are correct
 
@@ -152,22 +152,35 @@ gd_66s <- sd(gd_66$temp)
 
 
 ```{r}
-X1 <- c(gd_66a, gd_54a, gd_44a, gd_35a, gd_27a, gd_21a, gd_15a, gd_11a, gd_7a, gd_3.7a, gd_1a, gd_0a)
+temp <- c(gd_66a, gd_54a, gd_44a, gd_35a, gd_27a, gd_21a, gd_15a, gd_11a, gd_7a, gd_3.7a, gd_1a, gd_0a)
 z_grid <- c(-66, -54, -44, -35, -27, -21, -15, -11, -7, -3.7, -1, 0)
 data <- c("Glider")
-gd_p <- data.frame(z_grid, X1, data)
+gd_p <- data.frame(z_grid, data, temp)
 ```
 
 
 ```{r}
-new_profile <- rbind(gd_p, pd_p)
+new_profile <- rbind(gd_p, e1)
 ```
 
 
 ```{r}
-ggplot(new_profile, aes(X1, z_grid, colour=data), ) + geom_point() + geom_path() + theme_bw() + labs(title="Glider/eReefs Comparison 2017-11-10 GBR (-17.837, 146.710)",x="Temperature", y = "Depth (m) relative to msl")
+ggplot(new_profile, aes(temp, z_grid, colour=data), ) + geom_point() + geom_path() + theme_bw() + labs(title="Glider/eReefs Comparison 2017-11-10 GBR (-17.837, 146.710)",x="Temperature", y = "Depth (m) relative to msl")
 
 
-st_e
+
 ```
+
+
+```{r}
+bias <- e1$temp - gd_p$temp
+plot(e1$z_grid~bias)
+abline(v=-0, col="blue", lty=10)
+
+lm_c <- lm(e1$temp~gd_p$temp)
+plot(e1$temp~gd_p$temp)
+abline(lm_c)
+summary(lm_c)
+```
+
 
