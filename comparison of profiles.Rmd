@@ -1,0 +1,173 @@
+---
+title: "profile comparisons"
+author: "Rae"
+date: "14 March 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+ereefs <- function(x) {
+  temp <- data.frame(x$temp)
+  temp <- temp[,1]
+  z_grid <- data.frame(x$z_grid)
+  z_grid <- z_grid[-45,]
+  eta <- data.frame(x$eta)
+  eta <- eta[1, ]
+  data <- ("eReefs")
+  na.omit(data.frame(z_grid, data, temp))
+  
+}
+
+ereefs(get_ereefs_profile(var_names = "temp", start_date = c(2017, 11, 10), end_date = c(2017, 11, 10), location_latlon = c(-17.837, 146.710), input_file = 6))
+```
+
+glider <- function(x) { 
+  temp <- ncvar_get(x, 'TEMP')
+  depth <- ncvar_get(x, 'DEPTH')
+  timeS <- ncvar_get(x, 'TIME')
+  lat <- ncvar_get(x, 'LATITUDE')
+  long <- ncvar_get(x, 'LONGITUDE')
+  na.omit(data.frame(timeS, lat, long, depth, temp)
+}
+
+
+```{r}
+p_1712 <- get_ereefs_profile(var_names = "temp", start_date = c(2017, 11, 10), end_date = c(2017, 11, 10), location_latlon = c(-17.837, 146.710), input_file = 6)
+
+plot_ereefs_profile(p_1712)
+
+
+temp <- data.frame(p_1712$temp)
+temp <- temp[,1]
+z_grid <- data.frame(p_1712$z_grid)
+z_grid <- z_grid[-45,]
+eta <- data.frame(p_1712$eta)
+eta <- eta[1, ]
+data <- ("eReefs")
+df <- na.omit(data.frame(z_grid, data, temp))
+
+
+
+
+temp <- p_1712$temp
+z_grid <- data.frame(p_1712$z_grid)
+z_grid <- z_grid[-45,]
+eta <- data.frame(p_1712$eta)
+eta <- eta[1, ]
+data <- ("eReefs")
+
+pd_p <- data.frame(z_grid, temp, data)
+pd_p <- pd_p[, c(1,2)]
+pd_p <- na.omit(pd_p)
+pd_p$data <- 'eReefs'
+
+ z_grid <- data.frame(p_1712$z_grid[-45,])
+
+data <- ("eReefs")
+
+```
+
+
+```{r}
+g_gbr1711 <- glider(nc_open("IMOS_ANFOG_BCEOPSTUV_20171107T015221Z_SL209_FV01_timeseries_END-20171208T042436Z.nc"))
+```
+
+setting up dates, time and msl depth
+```{r}
+g_gbr1711$time <- as.POSIXlt((g_gbr1711$timeS)*86400, origin = as.POSIXlt("1950-01-01", "UTC"))
+g_gbr1711$time <- as.character(g_gbr1711$time)
+
+g_gbr1711$date <- as.Date(g_gbr1711$timeS, origin = "1950-01-01")
+g_gbr1711$date <- as.character(g_gbr1711$date)
+
+g_gbr1711$depth_msl <- (g_gbr1711$depth*(-1)+0.322)
+g_gbr1711$depth_msl <- (g_gbr1711$depth_msl*(-1)
+```
+
+
+```{r}
+g_gbr_d <- g_gbr1711[which(g_gbr1711$date == c("2017-11-10")), names(g_gbr1711) %in% c("timeS", "lat", "long", "depth", "temp", "time", "depth_msl")]
+```
+
+
+```{r}
+start_time <- which(g_gbr_d$time == "2017-11-10 11:30:00") 
+end_time <- which(g_gbr_d$time == "2017-11-10 12:30:00"), 
+
+g_gbr_h<- g_gbr_d[c(start_time:end_time),c(1:7)] #make sure start_time/end_time are correct
+
+```
+
+```{r}
+gd_0 <- g_gbr_h[which( g_gbr_h$depth_msl > (-1) & g_gbr_h$depth_msl <= 0), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_0a <- mean(gd_0$temp)
+gd_0s <- sd(gd_0$temp)
+
+gd_1 <- g_gbr_h[which( g_gbr_h$depth_msl > 0  & g_gbr_h$depth_msl <=1), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_1a <- mean(gd_1$temp)
+gd_1s <- sd(gd_1$temp)
+
+gd_3.7 <- g_gbr_h[which( g_gbr_h$depth_msl > 1  & g_gbr_h$depth_msl <= 3.7), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_3.7a <- mean(gd_3.7$temp)
+gd_3.7s <- sd(gd_3.7$temp)
+
+gd_7 <- g_gbr_h[which( g_gbr_h$depth > 3.7 & g_gbr_h$depth_msl <=7), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_7a <- mean(gd_7$temp)
+gd_7s <- sd(gd_7$temp)
+
+gd_11 <- g_gbr_h[which( g_gbr_h$depth_msl > 7  & g_gbr_h$depth_msl <=11), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_11a <- mean(gd_11$temp)
+gd_11s <- sd(gd_11$temp)
+
+
+gd_15 <- g_gbr_h[which( g_gbr_h$depth >12 & g_gbr_h$depth_msl <=15), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_15a <- mean(gd_15$temp)
+gd_15s <- sd(gd_15$temp)
+
+gd_21 <- g_gbr_h[which( g_gbr_h$depth_msl >15  & g_gbr_h$depth_msl <=21), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_21a <- mean(gd_21$temp)
+gd_21s <- sd(gd_21$temp)
+
+gd_27 <- g_gbr_h[which( g_gbr_h$depth_msl >21  & g_gbr_h$depth_msl <=27), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_27a <- mean(gd_27$temp)
+gd_27s <- sd(gd_27$temp)
+
+gd_35 <- g_gbr_h[which( g_gbr_h$depth_msl >27  & g_gbr_h$depth_msl <=35), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_35a <- mean(gd_35$temp)
+gd_35s <- sd(gd_35$temp)
+
+gd_44 <- g_gbr_h[which( g_gbr_h$depth_msl >35  & g_gbr_h$depth_msl <=44), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_44a <- mean(gd_44$temp)
+gd_44s <- sd(gd_44$temp)
+
+gd_54 <- g_gbr_h[which( g_gbr_h$depth_msl >44  & g_gbr_h$depth_msl <=54), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_54a <- mean(gd_54$temp)
+gd_54s <- sd(gd_54$temp)
+
+gd_66 <- g_gbr_h[which( g_gbr_h$depth_msl >54  & g_gbr_h$depth_msl <=66), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
+gd_66a <- mean(gd_66$temp)
+gd_66s <- sd(gd_66$temp)
+```
+
+
+```{r}
+X1 <- c(gd_66a, gd_54a, gd_44a, gd_35a, gd_27a, gd_21a, gd_15a, gd_11a, gd_7a, gd_3.7a, gd_1a, gd_0a)
+z_grid <- c(-66, -54, -44, -35, -27, -21, -15, -11, -7, -3.7, -1, 0)
+data <- c("Glider")
+gd_p <- data.frame(z_grid, X1, data)
+```
+
+
+```{r}
+new_profile <- rbind(gd_p, pd_p)
+```
+
+
+```{r}
+ggplot(new_profile, aes(X1, z_grid, colour=data), ) + geom_point() + geom_path() + theme_bw() + labs(title="Glider/eReefs Comparison 2017-11-10 GBR (-17.837, 146.710)",x="Temperature", y = "Depth (m) relative to msl")
+
+
+st_e
+```
+

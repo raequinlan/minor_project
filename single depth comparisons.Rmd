@@ -24,6 +24,8 @@ editor_options:
  -- eg when I subset a specific date it take from 10am to 10am not midnight to midnight is it because I selected Brisbane time
  
  -- really need to refine the locations!!
+ 
+
 
 
 #Glider
@@ -51,59 +53,61 @@ g_gbr1711$time <- as.character(g_gbr1711$time)
 
 g_gbr1711$date <- as.Date(g_gbr1711$timeS, origin = "1950-01-01")
 g_gbr1711$date <- as.character(g_gbr1711$date)
+
+g_gbr1711$depth_msl <- (g_gbr1711$depth*(-1)+"eta")
 ```
 
 selecting the day
 ```{r}
-g_gbr171124 <- g_gbr1711[which(g_gbr1711$date == c("2017-11-24")), names(g_gbr1711) %in% c("timeS", "lat", "long", "depth", "temp", "time")]
+g_gbr_d <- g_gbr1711[which(g_gbr1711$date == c("2017-12-01")), names(g_gbr1711) %in% c("timeS", "lat", "long", "depth", "temp", "time")]
 ```
 
 selection the time
 ```{r}
-start_time <- which(g_gbr171124$time == "2017-11-24 21:00:00", arr.ind = T) 
-end_time <- which(g_gbr171124$time == "2017-11-24 22:00:00", arr.ind = T)
+start_time <- which(g_gbr_d$time == "2017-12-01 11:30:00") 
+end_time <- which(g_gbr_d$time == "2017-12-01 12:00:00"), 
 
-g_gbr171124_12 <- g_gbr171124[c(start_time:end_time),c(1:6)] #make sure start_time/end_time are correct
+g_gbr_h<- g_gbr_d[c(start_time:end_time),c(1:6)] #make sure start_time/end_time are correct
 
-g_gbr171124_22 <- g_gbr171124[c(start_time:end_time),c(1:6)]
 ```
 
 ```{r}
-gd_5 <- g_gbr171124_12[which( g_gbr171124_12$depth > 4.5 & g_gbr171124_12$depth < 5.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_5 <- g_gbr_h[which( g_gbr_h$depth > 4.5 & g_gbr_h$depth < 5.5), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
 gd_5a <- mean(gd_5$temp)
 gd_5s <- sd(gd_5$temp)
 
-gd_10 <- g_gbr171124_12[which( g_gbr171124_12$depth > 9.5 & g_gbr171124_12$depth < 10.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_10 <- g_gbr_h[which( g_gbr_h$depth > 9.5 & g_gbr_h$depth < 10.5), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
 gd_10a <- mean(gd_10$temp)
 gd_10s <- sd(gd_10$temp)
 
-gd_15 <- g_gbr171124_12[which( g_gbr171124_12$depth > 14.5 & g_gbr171124_12$depth < 15.5), names(g_gbr171124_12) %in% c("lat", "long", "depth", "temp")]
+gd_15 <- g_gbr_h[which( g_gbr_h$depth > 14.5 & g_gbr_h$depth < 15.5), names(g_gbr_h) %in% c("lat", "long", "depth", "temp")]
 gd_15a <- mean(gd_15$temp)
 gd_15s <- sd(gd_15$temp)
 ```
 
 find lat and long
 ```{r}
-round(max(g_gbr171124_12$lat), digits=2)
-round(min(g_gbr171124_12$lat), digits=2)
-round(max(g_gbr171124_12$long), digits=2)
-round(min(g_gbr171124_12$long), digits=2)
-
+round(mean(g_gbr_h$lat), digits=3)
+round(min(g_gbr_h$lat), digits=3)
+round(max(g_gbr_h$lat), digits=3)
+round(mean(g_gbr_h$long), digits=3)
+round(min(g_gbr_h$long), digits=2)
+round(max(g_gbr_h$long), digits=3)
 ```
 
 
 #eReefs
 
-at the moment have to physically input the selected dates, depth and location
+at the moment have to manually input the selected dates, depth and location
 ```{r}
 
-ed_5 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_5 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 5, start_date = c(2017, 12, 01), end_date = c(2017, 12, 01), location_latlon = c(-18.585, 147.090), input_file = 6)
 ed_5a <- ed_5$temp
 
-ed_10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_10 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 10,start_date = c(2017, 12, 01), end_date = c(2017, 12, 01), location_latlon = c(-18.585, 147.090), input_file = 6)
 ed_10a <- ed_10$temp
 
-ed_15 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 15, start_date = c(2017, 11, 24), end_date = c(2017,11, 24), location_latlon = c(-18.35,147.02), input_file = 6)
+ed_15 <- get_ereefs_depth_specified_ts(var_names = "temp", depth = 15, start_date = c(2017, 12, 01), end_date = c(2017, 12, 01), location_latlon = c(-18.585, 147.090), input_file = 6)
 ed_15a <- ed_15$temp
 
 ```
@@ -115,13 +119,19 @@ ed_15a <- ed_15$temp
 c_temp <- c(ed_5a, ed_10a, ed_15a, gd_5a, gd_10a, gd_15a)
 c_depth <- c(5, 10, 15, 5, 10, 15)
 c_data <- c("eReefs","eReefs","eReefs","Glider","Glider","Glider")
-c171201 <- data.frame(c_temp, c_depth, c_data)
+c_sd <- c(0, 0, 0, gd_5s, gd_10s, gd_15s)
+c171201 <- data.frame(c_temp, c_depth, c_data, c_sd)
 ```
 
 #plotting
 ```{r}
-ggplot(c171201, aes(c_temp, c_depth, colour=c_data), ) + geom_point() + geom_path() + scale_y_continuous(trans = "reverse") + theme_bw() + labs(title="Glider/eReefs Comparison 24-11-2017 GBR",x="Temperature", y = "Depth below surface (m)")
+ggplot(c171201, aes(c_temp, c_depth, colour=c_data), ) + geom_point() + geom_path() + scale_y_continuous(trans = "reverse") + theme_bw() + labs(title="Glider/eReefs Comparison 01-12-2017 GBR (-18.585, 147.090)",x="Temperature", y = "Depth below surface (m)") + geom_errorbarh(aes(xmin=c_temp-c_sd, xmax=c_temp+c_sd), height = 0.15)
 ```
 
 
 
+#IMPROVEMENTS
+get_ereefs_profile()
+- z_grid boundaries (vertically)
+- eta == adjust the depth for glider 
+- spacial grid
